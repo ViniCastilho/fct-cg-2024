@@ -1,0 +1,43 @@
+body {
+	padding: 0;
+	border: 0;
+	margin: 0;
+
+	image-rendering: pixelated;
+	background-color: #000000;
+}
+
+#cg-tool {
+	position: fixed;
+
+	padding: 0;
+	border: 0;
+	margin: 0;
+
+	top: 0;
+	left: 0;
+	height: 7vw;
+	width: 100vw;
+
+	font-family: monospace;
+	font-size: 3vw;
+	z-index: 16;
+
+	background-color: #AAAAAA;
+}
+
+#cg-canvas {
+	position: absolute;
+
+	padding: 0;
+	border: 0;
+	margin: 0;
+
+	top: 7vw;
+	left: 50vw;
+	height: 128px;
+	width: 128px;
+	transform: translate(-50%, 0.3vw);
+
+	background-color: #FF5555;
+}
