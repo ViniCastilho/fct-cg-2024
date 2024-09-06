@@ -4,26 +4,7 @@ body {
 	margin: 0;
 
 	image-rendering: pixelated;
-	background-color: #000000;
-}
-
-#cg-tool {
-	position: fixed;
-
-	padding: 0;
-	border: 0;
-	margin: 0;
-
-	top: 0;
-	left: 0;
-	height: 7vw;
-	width: 100vw;
-
-	font-family: monospace;
-	font-size: 3vw;
-	z-index: 16;
-
-	background-color: #AAAAAA;
+	background-color: #555555;
 }
 
 #cg-canvas {
@@ -33,16 +14,8 @@ body {
 	border: 0;
 	margin: 0;
 
-	top: 7vw;
-	left: 50vw;
-	height: 128px;
-	width: 128px;
-	transform: translate(-50%, 0.3vw);
+	top: 0vh;
+	left: 0vw;
 
-	background-color: #FF5555;
-}
-
-.cg-inline-btn {
-	height: 3vw;
-	width: auto;
+	background-color: #FFFFFF;
 }
