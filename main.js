@@ -21,6 +21,7 @@ cglib.reset = function (width, height) {
 
 cglib.draw = {};
 
+// TODO: FIX
 cglib.draw.bresenhamLine = function (x0, y0, x1, y1) {
 	let dx = x1-x0;
 	let dy = y1-y0;
@@ -94,4 +95,4 @@ cglib.draw.paramCircle = function (x, y, r) {
 cglib.reset(256, 256);
 cglib.draw.rootCircle(128, 128, 16);
 cglib.draw.paramCircle(128, 128, 32);
-cglib.draw.bresenhamLine(255,255,230,210);
+cglib.draw.bresenhamLine(255,255,200,200);
