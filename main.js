@@ -217,6 +217,6 @@ cglib.reset(256, 256);
 cglib.draw.slopeLine(0,0,0,0);
 cglib.draw.paramLine(16,16,32,64);
 cglib.draw.bresenhamLine(18,18,34,66);
-cglib.draw.rootCircle(128, 128, 80);
-cglib.draw.paramCircle(128, 128, 32);
+cglib.draw.rootCircle(128,128,80);
+cglib.draw.paramCircle(128,128,32);
 cglib.draw.bresenhamLine(255,255,200,200);
