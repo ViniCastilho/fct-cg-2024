@@ -8,6 +8,7 @@
 	7) Recorte usando Cohen-Sutherland.
 
 //*/
+
 let cglib = {
 	'clr_r': document.querySelector('#clr-r'),
 	'clr_g': document.querySelector('#clr-g'),
@@ -156,7 +157,36 @@ cglib.draw.paramLine = function (x0, y0, x1, y1) {
 }
 
 cglib.draw.bresenhamLine = function (x0, y0, x1, y1) {
-	
+	let ctx = cglib.canvas.getContext('2d');
+	if (x0 > x1) { let aux = x0; x0 = x1; x1 = aux; }
+	if (y0 > y1) { let aux = y0; y0 = y1; y1 = aux; }
+	let dtx = x1-x0;
+	let dty = y1-y0;
+	if (dtx > dty) {
+		let dv = (2*dty)-dtx;
+		let cy = y0;
+		for (let i = x0; i <= x1; i++) {
+			ctx.fillRect(i, cy, 1, 1);
+			if (dv > 0) {
+				cy++;
+				dv += 2*(dty-dtx);
+			} else {
+				dv += 2*dty;
+			}
+		}
+	} else {
+		let dv = (2*dty)-dtx;
+		let cx = x0;
+		for (let i = y0; i <= y1; i++) {
+			ctx.fillRect(cx, i, 1, 1);
+			if (dv > 0) {
+				cx++;
+				dv += 2*(dtx-dty);
+			} else {
+				dv += 2*dtx;
+			}
+		}
+	}
 }
 
 cglib.draw.rootCircle = function (x, y, r) {
@@ -186,6 +216,7 @@ cglib.draw.paramCircle = function (x, y, r) {
 cglib.reset(256, 256);
 cglib.draw.slopeLine(0,0,0,0);
 cglib.draw.paramLine(16,16,32,64);
+cglib.draw.bresenhamLine(18,18,34,66);
 cglib.draw.rootCircle(128, 128, 80);
 cglib.draw.paramCircle(128, 128, 32);
 cglib.draw.bresenhamLine(255,255,200,200);
