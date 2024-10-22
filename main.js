@@ -1,8 +1,89 @@
+/*
+	RESTANTE:
+	3) Desenhar retas usando Bresenham
+	4) Desenhar circunferência usando Pixels
+		b) Eq. Paramétrica com simetria
+	5) Desenhar circunferência c/ Bresenham (2a diferênça + simetria)
+	6) Transformações e Projeção - Casinha
+	7) Recorte usando Cohen-Sutherland.
+
+//*/
 let cglib = {
+	'clr_r': document.querySelector('#clr-r'),
+	'clr_g': document.querySelector('#clr-g'),
+	'clr_b': document.querySelector('#clr-b'),
+	'clr_h': document.querySelector('#clr-h'),
+	'clr_s': document.querySelector('#clr-s'),
+	'clr_v': document.querySelector('#clr-v'),
 	'canvas': document.querySelector('#cg-canvas'),
 	'color': '#000000',
 	'brush_size': 1,
+	'to_hsv': document.querySelector('#btn-to-hsv'),
+	'to_rgb': document.querySelector('#btn-to-rgb'),
 };
+
+cglib.to_hsv.addEventListener('click', function () {
+	let rf = cglib.clr_r.value/255;
+	let gf = cglib.clr_g.value/255;
+	let bf = cglib.clr_b.value/255;
+	let cmax = Math.max(rf,gf,bf);
+	let cmin = Math.min(rf,gf,bf);
+	let delta = cmax-cmin;
+	if (delta == 0) {
+		cglib.clr_h.value = 0;
+	} else if (cmax == rf) {
+		cglib.clr_h.value = (Math.PI/3)*((gf - bf) / delta);
+	} else if (cmax == gf) {
+		cglib.clr_h.value = (Math.PI/3)*(((bf - rf) / delta) + 2);
+	} else {
+		cglib.clr_h.value = (Math.PI/3)*(((rf - gf) / delta) + 4);
+	}
+	if (cglib.clr_h.value < 0) {
+		cglib.clr_h.value = Math.floor(((cglib.clr_h.value % 6) + 6) * 60);
+	} else {
+		cglib.clr_h.value = Math.floor((cglib.clr_h.value % 6) * 60);
+	}
+	if (cmax == 0) {
+		cglib.clr_s.value = 0;
+	} else {
+		cglib.clr_s.value = delta/cmax;
+	}
+	cglib.clr_v.value = cmax;
+});
+
+cglib.to_rgb.addEventListener('click', function () {
+	let hf = cglib.clr_h.value/60;
+	let sf = cglib.clr_s.value;
+	let vf = cglib.clr_v.value;
+	let ca = vf*(1-sf);
+	let cb = vf*(1-(hf-Math.floor(hf))*sf);
+	let cc = vf*(1-(1-(hf-Math.floor(hf)))*sf);
+	if (hf < 1) {
+		cglib.clr_r.value = Math.floor(vf*255);
+		cglib.clr_g.value = Math.floor(cc*255);
+		cglib.clr_b.value = Math.floor(ca*255);
+	} else if (hf < 2) {
+		cglib.clr_r.value = Math.floor(cb*255);
+		cglib.clr_g.value = Math.floor(vf*255);
+		cglib.clr_b.value = Math.floor(ca*255);
+	} else if (hf < 3) {
+		cglib.clr_r.value = Math.floor(ca*255);
+		cglib.clr_g.value = Math.floor(vf*255);
+		cglib.clr_b.value = Math.floor(cc*255);
+	} else if (hf < 4) {
+		cglib.clr_r.value = Math.floor(ca*255);
+		cglib.clr_g.value = Math.floor(cb*255);
+		cglib.clr_b.value = Math.floor(vf*255);
+	} else if (hf < 5) {
+		cglib.clr_r.value = Math.floor(cc*255);
+		cglib.clr_g.value = Math.floor(ca*255);
+		cglib.clr_b.value = Math.floor(vf*255);
+	} else {
+		cglib.clr_r.value = Math.floor(vf*255);
+		cglib.clr_g.value = Math.floor(ca*255);
+		cglib.clr_b.value = Math.floor(cb*255);
+	}
+});
 
 cglib.resize = function (width, height) {
 	cglib.canvas.height = height;
@@ -10,6 +91,12 @@ cglib.resize = function (width, height) {
 }
 
 cglib.reset = function (width, height) {
+	cglib.clr_r.value = 0;
+	cglib.clr_g.value = 0;
+	cglib.clr_b.value = 0;
+	cglib.clr_h.value = 0;
+	cglib.clr_s.value = 0;
+	cglib.clr_v.value = 0;
 	cglib.canvas = document.querySelector('#cg-canvas');
 	cglib.color = '#000000';
 	cglib.resize(height, width);
@@ -21,78 +108,84 @@ cglib.reset = function (width, height) {
 
 cglib.draw = {};
 
-// TODO: FIX
-cglib.draw.bresenhamLine = function (x0, y0, x1, y1) {
-	let dx = x1-x0;
-	let dy = y1-y0;
-	let is_x_greater = Math.abs(dx) >= Math.abs(dy);
-	let g0 = null; let g1 = null;
-	let l0 = null; let l1 = null;
-	let gd = null; let ld = null;
-	if (is_x_greater) {
-		if (x1 < x0) {
-			let aux = x1;
-			x1 = x0;
-			x0 = aux;
-		}
-		g0 = x0; g1 = x1;
-		l0 = y0; l1 = y1;
-		gd = dx;
-		ld = dy;
-	} else {
-		if (y1 < y0) {
-			let aux = y1;
-			y1 = y0;
-			y0 = aux;
-		}
-		g0 = y0; g1 = y1;
-		l0 = x0; l1 = x1;
-		gd = dy;
-		ld = dx;
-	}
-	let ds = 2*ld - gd;
-	let df = 2*ld;
-	let dd = 2*(ld-gd);
-	let g = g0;
-	let l = l0;
+cglib.draw.slopeLine = function (x0, y0, x1, y1) {
 	let ctx = cglib.canvas.getContext('2d');
-	while (g < g1) {
-		if (ds < 0) {
-			ds += df;
-			g++;
+	if (x0 > x1) { let aux = x0; x0 = x1; x1 = aux; }
+	if (y0 > y1) { let aux = y0; y0 = y1; y1 = aux; }
+	let dtx = x1-x0;
+	let dty = y1-y0;
+	if (Math.max(dtx,dty) == 0) {
+		ctx.fillRect(x0, y0, 1, 1);
+		return;
+	}
+	if (dtx > dty) { // Horizontal line
+		if (dty == 0) {
+			for (let i = x0; i <= x1; i++) {
+				ctx.fillRect(i, y0, 1, 1);
+			}
 		} else {
-			ds += dd;
-			g++;
-			l++;
+			let m = dty/dtx;
+			for (let i = x0; i <= x1; i++) {
+				ctx.fillRect(i, Math.round(m*(i-x1)+y1), 1, 1);
+			}
 		}
-		if (is_x_greater) {
-			ctx.fillRect(g, l, 1, 1);
+	} else { // Vertical line
+		if (dty == 0) {
+			for (let i = y0; i <= y1; i++) {
+				ctx.fillRect(x0, i, 1, 1);
+			}
 		} else {
-			ctx.fillRect(l, g, 1, 1);
+			let m = dty/dtx;
+			for (let i = y0; i <= y1; i++) {
+				ctx.fillRect(Math.round((i-y1)/m+x1), i, 1, 1);
+			}
 		}
 	}
 }
 
+cglib.draw.paramLine = function (x0, y0, x1, y1) {
+	let ctx = cglib.canvas.getContext('2d');
+	if (x0 > x1) { let aux = x0; x0 = x1; x1 = aux; }
+	if (y0 > y1) { let aux = y0; y0 = y1; y1 = aux; }
+	let dtx = x1-x0;
+	let dty = y1-y0;
+	let step = 1/Math.max(dtx,dty);
+	for (let t = 0; t < 1; t+=step) {
+		ctx.fillRect(Math.round(x0+dtx*t), Math.round(y0+dty*t), 1, 1);
+	}
+}
+
+cglib.draw.bresenhamLine = function (x0, y0, x1, y1) {
+	
+}
+
 cglib.draw.rootCircle = function (x, y, r) {
 	let ctx = cglib.canvas.getContext('2d');
-	for (let i = -r; i < r; i++) {
+	for (let i = 0; i < r; i++) {
 		let j = Math.sqrt(r*r - i*i);
 		ctx.fillRect(i+x, Math.round(y+j), 1, 1);
 		ctx.fillRect(i+x, Math.round(y-j), 1, 1);
+		ctx.fillRect(x-i, Math.round(y+j), 1, 1);
+		ctx.fillRect(x-i, Math.round(y-j), 1, 1);
 	}
 }
 
 cglib.draw.paramCircle = function (x, y, r) {
 	let ctx = cglib.canvas.getContext('2d');
 	let step = Math.PI/(4*r);
-	for (let n = 0; n < 2*Math.PI; n+=step) {
+	for (let n = 0; n < Math.PI/2; n+=step) {
 		let i = r*Math.cos(n);
 		let j = r*Math.sin(n);
 		ctx.fillRect(Math.round(x+i), Math.round(y+j), 1, 1);
+		ctx.fillRect(Math.round(x+i), Math.round(y-j), 1, 1);
+		ctx.fillRect(Math.round(x-i), Math.round(y+j), 1, 1);
+		ctx.fillRect(Math.round(x-i), Math.round(y-j), 1, 1);
 	}
 }
 
 cglib.reset(256, 256);
-cglib.draw.rootCircle(128, 128, 16);
+cglib.draw.slopeLine(0,0,0,0);
+cglib.draw.paramLine(16,16,32,64);
+cglib.draw.rootCircle(128, 128, 80);
 cglib.draw.paramCircle(128, 128, 32);
 cglib.draw.bresenhamLine(255,255,200,200);

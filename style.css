@@ -1,3 +1,7 @@
+* {
+	font-family: monospace;
+}
+
 body {
 	padding: 0;
 	border: 0;
@@ -5,17 +9,14 @@ body {
 
 	image-rendering: pixelated;
 	background-color: #555555;
+	color: #FFFFFF
 }
 
 #cg-canvas {
-	position: absolute;
-
 	padding: 0;
 	border: 0;
 	margin: 0;
 
-	top: 0vh;
-	left: 0vw;
-
+	image-rendering: pixelated;
 	background-color: #FFFFFF;
 }

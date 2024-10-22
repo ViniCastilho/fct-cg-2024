@@ -7,6 +7,16 @@
         <script src='main.js' defer></script>
     </head>
     <body>
-        <canvas id='cg-canvas'></canvas>
+        <canvas id='cg-canvas'></canvas><br>
+        RED&nbsp;[0,255]&nbsp;<input id='clr-r' type='number' value='0' min='0' max='255' step='1'>
+        HUE&nbsp;[0,360[&nbsp;<input id='clr-h' type='number' value='0' min='0' max='360' step='1'><br>
+
+        GRN&nbsp;[0,255]&nbsp;<input id='clr-g' type='number' value='0' min='0' max='255' step='1'>
+        SAT&nbsp;[0,1.0]&nbsp;<input id='clr-s' type='number' value='0' min='0' max='1' step='0.01'><br>
+
+        BLU&nbsp;[0,255]&nbsp;<input id='clr-b' type='number' value='0' min='0' max='255' step='1'>
+        VAL&nbsp;[0,1.0]&nbsp;<input id='clr-v' type='number' value='0' min='0' max='1' step='0.01'><br>
+        <button id='btn-to-hsv'>RGB TO HSV</button>
+        <button id='btn-to-rgb'>HSV TO RGB</button><br>
     </body>
 </html>
