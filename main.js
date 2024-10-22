@@ -1,6 +1,5 @@
 /*
 	RESTANTE:
-	3) Desenhar retas usando Bresenham
 	4) Desenhar circunferência usando Pixels
 		b) Eq. Paramétrica com simetria
 	5) Desenhar circunferência c/ Bresenham (2a diferênça + simetria)
@@ -162,7 +161,7 @@ cglib.draw.bresenhamLine = function (x0, y0, x1, y1) {
 	if (y0 > y1) { let aux = y0; y0 = y1; y1 = aux; }
 	let dtx = x1-x0;
 	let dty = y1-y0;
-	if (dtx > dty) {
+	if (dtx > dty) { // Horizontal line
 		let dv = (2*dty)-dtx;
 		let cy = y0;
 		for (let i = x0; i <= x1; i++) {
@@ -174,7 +173,7 @@ cglib.draw.bresenhamLine = function (x0, y0, x1, y1) {
 				dv += 2*dty;
 			}
 		}
-	} else {
+	} else { // Vertical line
 		let dv = (2*dty)-dtx;
 		let cx = x0;
 		for (let i = y0; i <= y1; i++) {
@@ -216,7 +215,9 @@ cglib.draw.paramCircle = function (x, y, r) {
 cglib.reset(256, 256);
 cglib.draw.slopeLine(0,0,0,0);
 cglib.draw.paramLine(16,16,32,64);
-cglib.draw.bresenhamLine(18,18,34,66);
 cglib.draw.rootCircle(128,128,80);
+cglib.draw.rootCircle(128,128,72);
 cglib.draw.paramCircle(128,128,32);
+cglib.draw.paramCircle(128,128,40);
 cglib.draw.bresenhamLine(255,255,200,200);
+cglib.draw.bresenhamLine(128,128,200,255);
