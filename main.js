@@ -1,7 +1,5 @@
 /*
 	RESTANTE:
-	4) Desenhar circunferência usando Pixels
-		b) Eq. Paramétrica com simetria
 	5) Desenhar circunferência c/ Bresenham (2a diferênça + simetria)
 	6) Transformações e Projeção - Casinha
 	7) Recorte usando Cohen-Sutherland.
@@ -15,8 +13,8 @@ let cglib = {
 	'clr_h': document.querySelector('#clr-h'),
 	'clr_s': document.querySelector('#clr-s'),
 	'clr_v': document.querySelector('#clr-v'),
-	'canvas': document.querySelector('#cg-canvas'),
 	'color': '#000000',
+	'canvas': document.querySelector('#cg-canvas'),
 	'brush_size': 1,
 	'to_hsv': document.querySelector('#btn-to-hsv'),
 	'to_rgb': document.querySelector('#btn-to-rgb'),
@@ -212,12 +210,29 @@ cglib.draw.paramCircle = function (x, y, r) {
 	}
 }
 
+cglib.draw.rotationCircle = function (x, y, r) {
+	let ctx = cglib.canvas.getContext('2d');
+	let cx = r;
+	let cy = 0;
+	let step = Math.PI/r;
+	let ts = Math.sin(step);
+	let tc = Math.cos(step);
+	for (let i = 0; i < Math.PI/2; i+=step) {
+		let nx = cx*tc - cy*ts;
+		cy = cx*ts + cy*tc;
+		cx = nx;
+		ctx.fillRect(Math.round(x+cx), Math.round(y+cy), 1, 1);
+		ctx.fillRect(Math.round(x+cx), Math.round(y-cy), 1, 1);
+		ctx.fillRect(Math.round(x-cx), Math.round(y+cy), 1, 1);
+		ctx.fillRect(Math.round(x-cx), Math.round(y-cy), 1, 1);
+	}
+}
+
 cglib.reset(256, 256);
 cglib.draw.slopeLine(0,0,0,0);
 cglib.draw.paramLine(16,16,32,64);
-cglib.draw.rootCircle(128,128,80);
-cglib.draw.rootCircle(128,128,72);
+cglib.draw.rotationCircle(128,128,16);
 cglib.draw.paramCircle(128,128,32);
-cglib.draw.paramCircle(128,128,40);
+cglib.draw.rootCircle(128,128,48);
 cglib.draw.bresenhamLine(255,255,200,200);
-cglib.draw.bresenhamLine(128,128,200,255);
+//cglib.draw.bresenhamLine(128,128,200,255);
