@@ -8,8 +8,32 @@
     </head>
     <body>
         <canvas id='cg-canvas'></canvas><br>
+        <button id='btn-clear'>Limpar Tela</button>
+        <span id='curr-tool'>Ferramenta: nenhuma</span>
+        <br>
+        <span id='first-point'>Ponto inicial: (_,_)</span>
+        <br><br>
+
+        Linhas:
+        <button id='btn-slopeLine'>Coeficiente</button>
+        <button id='btn-paramLine'>Paramétrica</button>
+        <button id='btn-bresenhamLine'>Bresenham</button>
+        <br><br>
+
+        Círculos:
+        <button id='btn-rootCircle'>Raíz</button>
+        <button id='btn-paramCircle'>Paramétrico</button>
+        <button id='btn-rotationCircle'>Rotação</button>
+        <button id='btn-bresenhamCircle'>Bresenham</button>
+        <br><br>
+
+        Transformações:
+        <button id='btn-rotateLeft90'>90° Esquerda</button>
+        <button id='btn-rotateRight90'>90° Direita</button>
+        <br><br>
+
         RED&nbsp;[0,255]&nbsp;<input id='clr-r' type='number' value='0' min='0' max='255' step='1'>
-        HUE&nbsp;[0,360[&nbsp;<input id='clr-h' type='number' value='0' min='0' max='360' step='1'><br>
+        HUE&nbsp;[0,360[&nbsp;<input id='clr-h' type='number' value='0' min='0' max='360.000000' step='1'><br>
 
         GRN&nbsp;[0,255]&nbsp;<input id='clr-g' type='number' value='0' min='0' max='255' step='1'>
         SAT&nbsp;[0,1.0]&nbsp;<input id='clr-s' type='number' value='0' min='0' max='1' step='0.01'><br>
