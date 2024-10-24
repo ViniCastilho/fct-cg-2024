@@ -4,6 +4,11 @@
 
 //*/
 
+const PX0 = 0;
+const PY0 = 1;
+const PX1 = 2;
+const PY1 = 3;
+
 let cglib = {
 	'clr_r': document.querySelector('#clr-r'),
 	'clr_g': document.querySelector('#clr-g'),
@@ -13,6 +18,8 @@ let cglib = {
 	'clr_v': document.querySelector('#clr-v'),
 	'color': '#000000',
 	'canvas': document.querySelector('#cg-canvas'),
+	'window': [null, null, null, null],
+	'window_text': document.querySelector('#window-text'),
 	'matrix': [],
 	'context': null,
 	'brush_size': 1,
@@ -25,74 +32,94 @@ let cglib = {
 };
 
 cglib.cohenSutherland = function (x0, y0, x1, y1) {
-	let f0 = 0; let f1 = 0;
+	let f0 = 0;
+	let f1 = 0;
 
-	if (x0 < 0) { f0 += 1; }
-	if (x0 > cglib.canvas.width) { f0 += 2; }
-	if (y0 < 0) { f0 += 4; }
-	if (y0 > cglib.canvas.height) { f0 += 8; }
+	if (x0 < cglib.window[PX0]) { f0 += 1; }
+	if (x0 > cglib.window[PX1]) { f0 += 2; }
+	if (y0 < cglib.window[PY0]) { f0 += 4; }
+	if (y0 > cglib.window[PY1]) { f0 += 8; }
 
-	if (x1 < 0) { f1 += 1; }
-	if (x1 > cglib.canvas.width) { f1 += 2; }
-	if (y1 < 0) { f1 += 4; }
-	if (y1 > cglib.canvas.height) { f1 += 8; }
+	if (x1 < cglib.window[PX0]) { f1 += 1; }
+	if (x1 > cglib.window[PX1]) { f1 += 2; }
+	if (y1 < cglib.window[PY0]) { f1 += 4; }
+	if (y1 > cglib.window[PY1]) { f1 += 8; }
 
+	console.log(f0, f1); 
 	if (f0 == 0 && f1 == 0) {
-		return true, x0, y0, x1, y1;
-	} else if (f0 & f1 != 0) {
-		return false;
+		return [x0, y0, x1, y1];
+	} else if ((f0 & f1 != 0)) {
+		console.log(f0 & f1);
+		return [null, null, null, null];
 	} else {
 		let m = (y1-y0)/(x1-x0);
 		let values = [x0, y0, x1, y1];
-		if (f0 & 1 == 1) { // Esquerda
-			let ny = m*(-x0)+y0;
-			if (ny >= 0 && ny <= cglib.canvas.height) {
-				if (x0 < x1) {
-					values[0] = 0;
-					values[1] = ny;	
+		let src = [x0, y0, x1, y1];
+		let plane = f0;
+		let inc = 0;
+		if (f0 == 0) {
+			plane = f1;
+			inc = 2;
+		}
+		let vx = inc;
+		let vy = inc + 1;
+		if (plane & 1 == 1) { // Esquerda
+			let ny = m * (cglib.window[PX0] - src[vx]) + src[vy];
+			if (ny >= cglib.window[PY0] && ny <= cglib.window[PY1]) {
+				let c = Math.floor(inc/2);
+				if (src[vx] > src[vy]) { c++; }
+				if (c % 2 == 0) {
+					values[PX0] = cglib.window[PX0];
+					values[PY0] = ny;	
 				} else {
-					values[2] = 0;
-					values[3] = ny;
+					values[PX1] = cglib.window[PX0];
+					values[PY1] = ny;
 				}
 			}
 		}
 		if (f0 & 2 == 1) { // Direita
-			let ny = m*(cglib.canvas.width-x0)+y0;
-			if (ny >= 0 && ny <= cglib.canvas.height) {
-				if (x0 < x1) {
-					values[2] = cglib.canvas.width;
-					values[3] = ny;	
+			let ny = m * (cglib.window[PX1] - src[vx]) + src[vy];
+			if (ny >= gclib.window[PY0] && ny <= cglib.window[PY1]) {
+				let c = Math.floor(inc/2);
+				if (src[vx] > src[vy]) { c++; }
+				if (c % 2 == 0) {
+					values[PX1] = cglib.window[PX1];
+					values[PY1] = ny;	
 				} else {
-					values[0] = cglib.canvas.width;
-					values[1] = ny;
+					values[PX0] = cglib.window[PX1];
+					values[PY0] = ny;
 				}
 			}
 		}
 		if (f0 & 8 == 1) { // Acima
-			let nx = (-y0)/m+x0;
-			if (nx >= 0 && nx <= cglib.canvas.width) {
-				if (y0 < y1) {
-					values[0] = nx;
-					values[1] = 0;
+			let nx = (cglib.window[PY0] - src[vy]) / m + src[vx];
+			if (nx >= cglib.window[PX0] && nx <= cglib.window[PX1]) {
+				let c = Math.floor(inc/2);
+				if (src[vx] > src[vy]) { c++; }
+				if (c % 2 == 0) {
+					values[PX0] = nx;
+					values[PY0] = cglib.window[PY0];
 				} else {
-					values[2] = nx;
-					values[3] = 0;
+					values[PX1] = nx;
+					values[PY1] = cglib.window[PY0];
 				}
 			}
 		}
 		if (f0 & 4 == 1) { // Abaixo
-			let nx = (cglib.canvas.height-y0)/m+x0;
-			if (nx >= 0 && nx <= cglib.canvas.width) {
-				if (y0 < y1) {
-					values[2] = nx;
-					values[3] = cglib.canvas.height;
+			let nx = (cglib.window[PY1] - src[vy]) / m + src[vx];
+			if (nx >= cglib.window[PX0] && nx <= cglib.window[PX1]) {
+				let c = Math.floor(inc/2);
+				if (src[vx] > src[vy]) { c++; }
+				if (c % 2 == 0) {
+					values[PX0] = nx;
+					values[PY0] = cglib.window[PY1];
 				} else {
-					values[0] = nx;
-					values[1] = cglib.canvas.height;
+					values[PX1] = nx;
+					values[PY1] = cglib.window[PY1];
 				}
 			}
 		}
-		return true, values[0], values[1], values[2], values[3];
+		return [values[PX0], values[PY0], values[PX1], values[PY1]];
 	}
 }
 
@@ -128,10 +155,36 @@ document.querySelector('#btn-clear').addEventListener('click', function () {
 });
 
 cglib.canvas.addEventListener('click', function (ev) {
-	if (cglib.tool == null) { return; }
 	let x1 = ev.offsetX;
 	let y1 = ev.offsetY;
-	if (cglib.pos[0] == null) {
+	if (cglib.window[0] == null) {
+		cglib.window[0] = x1;
+		cglib.window[1] = y1;
+		cglib.window_text.innerHTML = `Janela definida: (${x1},${y1}), (_,_)`;
+	} else if (cglib.window[2] == null) {
+		if (x1 < cglib.window[0]) {
+			cglib.window[2] = cglib.window[0];
+			cglib.window[0] = x1;
+		} else {
+			cglib.window[2] = x1;
+		}
+		if (y1 < cglib.window[1]) {
+			cglib.window[3] = cglib.window[1];
+			cglib.window[1] = y1;
+		} else {
+			cglib.window[3] = y1;
+		}
+		cglib.window_text.innerHTML = `Janela definida: (${cglib.window[0]},${cglib.window[1]}), (${cglib.window[2]},${cglib.window[3]})`;
+		cglib.color = '#FFFFFF';
+		for (let i = cglib.window[1]; i <= cglib.window[3]; i++) {
+			for (let j = cglib.window[0]; j < cglib.window[2]; j++) {
+				cglib.draw.pixel(j, i);
+			}
+		}
+		cglib.color = '#000000';
+	} else if (cglib.tool == null) {
+		return;
+	} else if (cglib.pos[0] == null) {
 		cglib.pos[0] = x1;
 		cglib.pos[1] = y1;
 		cglib.pos_text.innerHTML = `Ponto inicial: (${x1},${y1})`;
@@ -227,17 +280,19 @@ cglib.reset = function (width, height) {
 	cglib.clr_h.value = 0;
 	cglib.clr_s.value = 0;
 	cglib.clr_v.value = 0;
+	cglib.window_text.innerHTML = `Janela definida: (_,_), (_,_)`
 	cglib.matrix = [];
+	cglib.window = [null, null, null, null];
 	for (let i = 0; i < height; i++) {
 		cglib.matrix.push([]);
 		for (let j = 0; j < width; j++) {
-			cglib.matrix[i].push('#FFFFFF');
+			cglib.matrix[i].push('#AAAAAA');
 		}
 	}
 	cglib.color = '#000000';
 	cglib.resize(height, width);
 	cglib.context = cglib.canvas.getContext('2d');
-	cglib.context.fillStyle = '#FFFFFF';
+	cglib.context.fillStyle = '#AAAAAA';
 	cglib.context.fillRect(0, 0, width, height);
 	cglib.context.fillStyle = cglib.color;
 }
@@ -245,14 +300,19 @@ cglib.reset = function (width, height) {
 cglib.draw = {};
 
 cglib.draw.pixel = function (x, y) {
-	if (x < 0 || y < 0) { return; }
-	if (x >= cglib.canvas.width || y >= cglib.canvas.height) { return; }
+	if (x < cglib.window[0] || y < cglib.window[1]) { return; }
+	if (x > cglib.window[2] || y > cglib.window[3]) { return; }
 	cglib.matrix[y][x] = cglib.color;
 	cglib.context.fillStyle = cglib.color;
 	cglib.context.fillRect(x, y, 1, 1);
 }
 
 cglib.draw.slopeLine = function (x0, y0, x1, y1) {
+	let out = cglib.cohenSutherland(x0, y0, x1, y1);
+	console.log(out);
+	if (out[0] == null) { console.log('fuck');return; }
+	x0 = out[PX0]; y0 = out[PY0]; x1 = out[PX1]; y1 = out[PY1];
+	
 	if (Math.max(Math.abs(x1-x0), Math.abs(y1-y0)) == 0) {
 		cglib.draw.pixel(x0, y0, 1, 1);
 		return;
@@ -295,6 +355,11 @@ cglib.draw.slopeLine = function (x0, y0, x1, y1) {
 }
 
 cglib.draw.paramLine = function (x0, y0, x1, y1) {
+	let out = cglib.cohenSutherland(x0, y0, x1, y1);
+	console.log(out);
+	if (out[0] == null) { console.log('fuck');return; }
+	x0 = out[PX0]; y0 = out[PY0]; x1 = out[PX1]; y1 = out[PY1];
+	
 	let dtx = x1-x0;
 	let dty = y1-y0;
 	let step = 1/Math.max(Math.abs(dtx), Math.abs(dty));
@@ -304,6 +369,11 @@ cglib.draw.paramLine = function (x0, y0, x1, y1) {
 }
 
 cglib.draw.bresenhamLine = function (x0, y0, x1, y1) {
+	let out = cglib.cohenSutherland(x0, y0, x1, y1);
+	console.log(out);
+	if (out[0] == null) { console.log('fuck');return; }
+	x0 = out[PX0]; y0 = out[PY0]; x1 = out[PX1]; y1 = out[PY1];
+
 	if (Math.abs(x1-x0) > Math.abs(y1-y0)) { // Horizontal line
 		if (x1 < x0) {
 			let aux = x1; x1 = x0; x0 = aux;
@@ -425,4 +495,4 @@ Object.keys(cglib.draw).forEach(function (k) {
 	}
 });
 
-cglib.reset(256, 256);
+cglib.reset(288, 288);
