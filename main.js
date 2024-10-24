@@ -1,9 +1,3 @@
-/*
-	RESTANTE:
-	7) Recorte usando Cohen-Sutherland.
-
-//*/
-
 const PX0 = 0;
 const PY0 = 1;
 const PX1 = 2;
@@ -45,11 +39,9 @@ cglib.cohenSutherland = function (x0, y0, x1, y1) {
 	if (y1 < cglib.window[PY0]) { f1 += 4; }
 	if (y1 > cglib.window[PY1]) { f1 += 8; }
 
-	console.log(f0, f1); 
 	if (f0 == 0 && f1 == 0) {
 		return [x0, y0, x1, y1];
-	} else if ((f0 & f1 != 0)) {
-		console.log(f0 & f1);
+	} else if ((f0 & f1) > 0) {
 		return [null, null, null, null];
 	} else {
 		let m = (y1-y0)/(x1-x0);
@@ -79,7 +71,7 @@ cglib.cohenSutherland = function (x0, y0, x1, y1) {
 		}
 		if (f0 & 2 == 1) { // Direita
 			let ny = m * (cglib.window[PX1] - src[vx]) + src[vy];
-			if (ny >= gclib.window[PY0] && ny <= cglib.window[PY1]) {
+			if (ny >= cglib.window[PY0] && ny <= cglib.window[PY1]) {
 				let c = Math.floor(inc/2);
 				if (src[vx] > src[vy]) { c++; }
 				if (c % 2 == 0) {
@@ -91,7 +83,7 @@ cglib.cohenSutherland = function (x0, y0, x1, y1) {
 				}
 			}
 		}
-		if (f0 & 8 == 1) { // Acima
+		if (f0 & 4 == 1) { // Acima
 			let nx = (cglib.window[PY0] - src[vy]) / m + src[vx];
 			if (nx >= cglib.window[PX0] && nx <= cglib.window[PX1]) {
 				let c = Math.floor(inc/2);
@@ -105,7 +97,7 @@ cglib.cohenSutherland = function (x0, y0, x1, y1) {
 				}
 			}
 		}
-		if (f0 & 4 == 1) { // Abaixo
+		if (f0 & 8 == 1) { // Abaixo
 			let nx = (cglib.window[PY1] - src[vy]) / m + src[vx];
 			if (nx >= cglib.window[PX0] && nx <= cglib.window[PX1]) {
 				let c = Math.floor(inc/2);
@@ -129,7 +121,7 @@ cglib.rotateCanvas = function (angle) {
 	for (let i = 0; i < cglib.canvas.height; i++) {
 		cglib.matrix.push([]);
 		for (let j = 0; j < cglib.canvas.width; j++) {
-			cglib.matrix[i].push('#FFFFFF');
+			cglib.matrix[i].push('#AAAAAA');
 		}
 	}
 	let s = Math.sin(angle);
@@ -138,13 +130,24 @@ cglib.rotateCanvas = function (angle) {
 	let w = cglib.canvas.width/2;
 	for (let i = 0; i < cglib.canvas.height; i++) {
 		for (let j = 0; j < cglib.canvas.width; j++) {
-			let x = Math.round((j-w)*c - (i-h)*s);
-			let y = Math.round((j-w)*s + (i-h)*c);
+			let x = w+Math.round((j-w)*c - (i-h)*s);
+			let y = h+Math.round((j-w)*s + (i-h)*c);
+			x = Math.min(Math.max(0, x), cglib.canvas.width-1);
+			y = Math.min(Math.max(0, y), cglib.canvas.height-1);
 			cglib.color = aux[i][j];
-			cglib.draw.pixel(x+w, y+h);
+			cglib.draw.pixel(x, y, true);
 		}
 	}
 	cglib.color = "#000000";
+	let nx0 = w+Math.round((cglib.window[PX0]-w)*c - (cglib.window[PY0]-h)*s);
+	let ny0 = h+Math.round((cglib.window[PX0]-w)*s + (cglib.window[PY0]-h)*c);
+	let nx1 = w+Math.round((cglib.window[PX1]-w)*c - (cglib.window[PY1]-h)*s);
+	let ny1 = h+Math.round((cglib.window[PX1]-w)*s + (cglib.window[PY1]-h)*c);
+	cglib.window_text.innerHTML = `Janela definida: (${nx0},${ny0}), (${nx1},${ny1})`;
+	cglib.window[PX0] = nx0;
+	cglib.window[PY0] = ny0;
+	cglib.window[PX1] = nx1;
+	cglib.window[PY1] = ny1;
 }
 
 document.querySelector('#btn-rotateLeft90').addEventListener('click', function () { cglib.rotateCanvas(Math.PI/2); });
@@ -157,27 +160,27 @@ document.querySelector('#btn-clear').addEventListener('click', function () {
 cglib.canvas.addEventListener('click', function (ev) {
 	let x1 = ev.offsetX;
 	let y1 = ev.offsetY;
-	if (cglib.window[0] == null) {
-		cglib.window[0] = x1;
-		cglib.window[1] = y1;
+	if (cglib.window[PX0] == null) {
+		cglib.window[PX0] = x1;
+		cglib.window[PY0] = y1;
 		cglib.window_text.innerHTML = `Janela definida: (${x1},${y1}), (_,_)`;
-	} else if (cglib.window[2] == null) {
-		if (x1 < cglib.window[0]) {
-			cglib.window[2] = cglib.window[0];
-			cglib.window[0] = x1;
+	} else if (cglib.window[PX1] == null) {
+		if (x1 < cglib.window[PX0]) {
+			cglib.window[PX1] = cglib.window[PX0];
+			cglib.window[PX0] = x1;
 		} else {
-			cglib.window[2] = x1;
+			cglib.window[PX1] = x1;
 		}
-		if (y1 < cglib.window[1]) {
-			cglib.window[3] = cglib.window[1];
-			cglib.window[1] = y1;
+		if (y1 < cglib.window[PY0]) {
+			cglib.window[PY1] = cglib.window[PY0];
+			cglib.window[PY0] = y1;
 		} else {
-			cglib.window[3] = y1;
+			cglib.window[PY1] = y1;
 		}
-		cglib.window_text.innerHTML = `Janela definida: (${cglib.window[0]},${cglib.window[1]}), (${cglib.window[2]},${cglib.window[3]})`;
+		cglib.window_text.innerHTML = `Janela definida: (${cglib.window[PX0]},${cglib.window[PY0]}), (${cglib.window[PX1]},${cglib.window[PY1]})`;
 		cglib.color = '#FFFFFF';
-		for (let i = cglib.window[1]; i <= cglib.window[3]; i++) {
-			for (let j = cglib.window[0]; j < cglib.window[2]; j++) {
+		for (let i = cglib.window[PY0]; i <= cglib.window[PY1]; i++) {
+			for (let j = cglib.window[PX0]; j < cglib.window[PX1]; j++) {
 				cglib.draw.pixel(j, i);
 			}
 		}
@@ -299,9 +302,13 @@ cglib.reset = function (width, height) {
 
 cglib.draw = {};
 
-cglib.draw.pixel = function (x, y) {
-	if (x < cglib.window[0] || y < cglib.window[1]) { return; }
-	if (x > cglib.window[2] || y > cglib.window[3]) { return; }
+cglib.draw.pixel = function (x, y, override) {
+	if (!override) {
+		if (x < cglib.window[PX0] || y < cglib.window[PY0]) { return; }
+		if (x > cglib.window[PX1] || y > cglib.window[PY1]) { return; }
+	}
+	if (x < 0 || y < 0) { return; }
+	if (x >= cglib.canvas.width || y >= cglib.window.height) { return; }
 	cglib.matrix[y][x] = cglib.color;
 	cglib.context.fillStyle = cglib.color;
 	cglib.context.fillRect(x, y, 1, 1);
@@ -309,12 +316,11 @@ cglib.draw.pixel = function (x, y) {
 
 cglib.draw.slopeLine = function (x0, y0, x1, y1) {
 	let out = cglib.cohenSutherland(x0, y0, x1, y1);
-	console.log(out);
-	if (out[0] == null) { console.log('fuck');return; }
+	if (out[0] == null) { return; }
 	x0 = out[PX0]; y0 = out[PY0]; x1 = out[PX1]; y1 = out[PY1];
 	
 	if (Math.max(Math.abs(x1-x0), Math.abs(y1-y0)) == 0) {
-		cglib.draw.pixel(x0, y0, 1, 1);
+		cglib.draw.pixel(x0, y0);
 		return;
 	}
 	if (Math.abs(x1-x0) > Math.abs(y1-y0)) { // Horizontal line
@@ -326,12 +332,12 @@ cglib.draw.slopeLine = function (x0, y0, x1, y1) {
 		let dty = y1-y0;
 		if (dty == 0) {
 			for (let i = x0; i <= x1; i++) {
-				cglib.draw.pixel(i, y0, 1, 1);
+				cglib.draw.pixel(i, y0);
 			}
 		} else {
 			let m = dty/dtx;
 			for (let i = x0; i <= x1; i++) {
-				cglib.draw.pixel(i, Math.round(m*(i-x1)+y1), 1, 1);
+				cglib.draw.pixel(i, Math.round(m*(i-x1)+y1));
 			}
 		}
 	} else { // Vertical line
@@ -343,12 +349,12 @@ cglib.draw.slopeLine = function (x0, y0, x1, y1) {
 		let dty = y1-y0;
 		if (dtx == 0) {
 			for (let i = y0; i <= y1; i++) {
-				cglib.draw.pixel(x0, i, 1, 1);
+				cglib.draw.pixel(x0, i);
 			}
 		} else {
 			let m = dty/dtx;
 			for (let i = y0; i <= y1; i++) {
-				cglib.draw.pixel(Math.round((i-y1)/m+x1), i, 1, 1);
+				cglib.draw.pixel(Math.round((i-y1)/m+x1), i);
 			}
 		}
 	}
@@ -356,22 +362,20 @@ cglib.draw.slopeLine = function (x0, y0, x1, y1) {
 
 cglib.draw.paramLine = function (x0, y0, x1, y1) {
 	let out = cglib.cohenSutherland(x0, y0, x1, y1);
-	console.log(out);
-	if (out[0] == null) { console.log('fuck');return; }
+	if (out[0] == null) { return; }
 	x0 = out[PX0]; y0 = out[PY0]; x1 = out[PX1]; y1 = out[PY1];
 	
 	let dtx = x1-x0;
 	let dty = y1-y0;
 	let step = 1/Math.max(Math.abs(dtx), Math.abs(dty));
 	for (let t = 0; t < 1; t+=step) {
-		cglib.draw.pixel(Math.round(x0+dtx*t), Math.round(y0+dty*t), 1, 1);
+		cglib.draw.pixel(Math.round(x0+dtx*t), Math.round(y0+dty*t));
 	}
 }
 
 cglib.draw.bresenhamLine = function (x0, y0, x1, y1) {
 	let out = cglib.cohenSutherland(x0, y0, x1, y1);
-	console.log(out);
-	if (out[0] == null) { console.log('fuck');return; }
+	if (out[0] == null) { return; }
 	x0 = out[PX0]; y0 = out[PY0]; x1 = out[PX1]; y1 = out[PY1];
 
 	if (Math.abs(x1-x0) > Math.abs(y1-y0)) { // Horizontal line
@@ -418,10 +422,10 @@ cglib.draw.bresenhamLine = function (x0, y0, x1, y1) {
 cglib.draw.rootCircle = function (x, y, r) {
 	for (let i = 0; i < r; i++) {
 		let j = Math.sqrt(r*r - i*i);
-		cglib.draw.pixel(i+x, Math.round(y+j), 1, 1);
-		cglib.draw.pixel(i+x, Math.round(y-j), 1, 1);
-		cglib.draw.pixel(x-i, Math.round(y+j), 1, 1);
-		cglib.draw.pixel(x-i, Math.round(y-j), 1, 1);
+		cglib.draw.pixel(i+x, Math.round(y+j));
+		cglib.draw.pixel(i+x, Math.round(y-j));
+		cglib.draw.pixel(x-i, Math.round(y+j));
+		cglib.draw.pixel(x-i, Math.round(y-j));
 	}
 }
 
@@ -430,10 +434,10 @@ cglib.draw.paramCircle = function (x, y, r) {
 	for (let n = 0; n < Math.PI/2; n+=step) {
 		let i = r*Math.cos(n);
 		let j = r*Math.sin(n);
-		cglib.draw.pixel(Math.round(x+i), Math.round(y+j), 1, 1);
-		cglib.draw.pixel(Math.round(x+i), Math.round(y-j), 1, 1);
-		cglib.draw.pixel(Math.round(x-i), Math.round(y+j), 1, 1);
-		cglib.draw.pixel(Math.round(x-i), Math.round(y-j), 1, 1);
+		cglib.draw.pixel(Math.round(x+i), Math.round(y+j));
+		cglib.draw.pixel(Math.round(x+i), Math.round(y-j));
+		cglib.draw.pixel(Math.round(x-i), Math.round(y+j));
+		cglib.draw.pixel(Math.round(x-i), Math.round(y-j));
 	}
 }
 
@@ -447,10 +451,10 @@ cglib.draw.rotationCircle = function (x, y, r) {
 		let nx = cx*tc - cy*ts;
 		cy = cx*ts + cy*tc;
 		cx = nx;
-		cglib.draw.pixel(Math.round(x+cx), Math.round(y+cy), 1, 1);
-		cglib.draw.pixel(Math.round(x+cx), Math.round(y-cy), 1, 1);
-		cglib.draw.pixel(Math.round(x-cx), Math.round(y+cy), 1, 1);
-		cglib.draw.pixel(Math.round(x-cx), Math.round(y-cy), 1, 1);
+		cglib.draw.pixel(Math.round(x+cx), Math.round(y+cy));
+		cglib.draw.pixel(Math.round(x+cx), Math.round(y-cy));
+		cglib.draw.pixel(Math.round(x-cx), Math.round(y+cy));
+		cglib.draw.pixel(Math.round(x-cx), Math.round(y-cy));
 	}
 }
 
@@ -458,9 +462,9 @@ cglib.draw.bresenhamCircle = function (x, y, r) {
 	let cx = r;
 	let cy = 0;
 	if (r > 0) {
-		cglib.draw.pixel(Math.round(x+cx), Math.round(y-cy), 1, 1);
-		cglib.draw.pixel(Math.round(x+cy), Math.round(y+cx), 1, 1);
-		cglib.draw.pixel(Math.round(x-cy), Math.round(y+cx), 1, 1);
+		cglib.draw.pixel(Math.round(x+cx), Math.round(y-cy));
+		cglib.draw.pixel(Math.round(x+cy), Math.round(y+cx));
+		cglib.draw.pixel(Math.round(x-cy), Math.round(y+cx));
 	}
 	let p = 1-r;
 	while (cx > cy) {
@@ -472,15 +476,15 @@ cglib.draw.bresenhamCircle = function (x, y, r) {
 			p += 2*(cy-cx) + 1;
 		}
 		if (cx < cy) { break; }
-		cglib.draw.pixel(Math.round(x+cx), Math.round(y+cy), 1, 1);
-		cglib.draw.pixel(Math.round(x+cx), Math.round(y-cy), 1, 1);
-		cglib.draw.pixel(Math.round(x-cx), Math.round(y+cy), 1, 1);
-		cglib.draw.pixel(Math.round(x-cx), Math.round(y-cy), 1, 1);
+		cglib.draw.pixel(Math.round(x+cx), Math.round(y+cy));
+		cglib.draw.pixel(Math.round(x+cx), Math.round(y-cy));
+		cglib.draw.pixel(Math.round(x-cx), Math.round(y+cy));
+		cglib.draw.pixel(Math.round(x-cx), Math.round(y-cy));
 		if (cx != cy) {
-			cglib.draw.pixel(Math.round(x+cy), Math.round(y+cx), 1, 1);
-			cglib.draw.pixel(Math.round(x+cy), Math.round(y-cx), 1, 1);
-			cglib.draw.pixel(Math.round(x-cy), Math.round(y+cx), 1, 1);
-			cglib.draw.pixel(Math.round(x-cy), Math.round(y-cx), 1, 1);
+			cglib.draw.pixel(Math.round(x+cy), Math.round(y+cx));
+			cglib.draw.pixel(Math.round(x+cy), Math.round(y-cx));
+			cglib.draw.pixel(Math.round(x-cy), Math.round(y+cx));
+			cglib.draw.pixel(Math.round(x-cy), Math.round(y-cx));
 		}
 	}
 }
@@ -495,4 +499,4 @@ Object.keys(cglib.draw).forEach(function (k) {
 	}
 });
 
-cglib.reset(288, 288);
+cglib.reset(192, 192);
