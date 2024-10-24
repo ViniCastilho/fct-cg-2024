@@ -140,7 +140,7 @@ cglib.canvas.addEventListener('click', function (ev) {
 		let y0 = cglib.pos[1];
 		if (cglib.tool.includes('Circle')) {
 			let r = Math.sqrt(
-				(x1-x0)**2 + (y1-x0)**2
+				(x1-x0)**2 + (y1-y0)**2
 			);
 			cglib.draw[cglib.tool](x0, y0, r);
 		} else {
